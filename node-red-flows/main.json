@@ -1,0 +1,2472 @@
+[
+    {
+        "id": "27aa2877.e08a5",
+        "type": "tab",
+        "label": "ESP8266 Set LED",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "9a2406038dedc131",
+        "type": "function",
+        "z": "27aa2877.e08a5",
+        "name": "Create a Chart Array for Chart.js",
+        "func": "// This function reformats the timeseries data into an array that \n// Chart.js (See http://www.chartjs.org/ ) will plot\n// The node-red-dashboard Chart node uses Chart.js \n\nvar starttime = flow.get(\"start-time\");\nvar endtime = flow.get(\"end-time\");\n\nstarttime = Math.floor( starttime / 1000);\nendtime = Math.floor(endtime / 1000);\n\n\nif( msg.payload.length === 0 ) {\n    // The historical database does not contain values for this date range \n    // Reset the chart with a blank array\n    msg.payload = [] ;\n    return msg;\n}\n\n\n\n// The Array has this structure, inserting the first element as a template.\nvar ChartData = [ {\"series\":[\"Data\"],\n                   \"data\":[[{\"x\":msg.payload[0].timestamp,\"y\": msg.payload[0].temperature}]],\n                   \"labels\":[\"Data\"]}];\n\n// Start at 1 because we've already added element 0 in the initial array definition\nfor( var i=1; i < msg.payload.length; i++ ) {\n    if( (msg.payload[i].timestamp >= starttime) && (msg.payload[i].timestamp <= endtime) ) {\n        // This temperature reading is within the Date Range\n        ChartData[0].data[0].push( { \"x\":msg.payload[i].timestamp,\"y\": msg.payload[i].temperature } );\n    }    \n}\n// Now we need to sort on the time so that we give the Chart node an array in time order\nChartData[0].data[0].sort(function sortNumber(a,b) { return a.x - b.x; });\n\n\nmsg.payload = ChartData;\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 930,
+        "y": 540,
+        "wires": [
+            [
+                "6c2c05588f0cee7b"
+            ]
+        ]
+    },
+    {
+        "id": "2eb7924f0010d566",
+        "type": "debug",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 810,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "eefe980e741b3863",
+        "type": "ui_button",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "group": "9dc23f7851b1145e",
+        "order": 22,
+        "width": 7,
+        "height": 1,
+        "passthru": false,
+        "label": "Load ESP 32 DHT History Data",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "",
+        "topicType": "str",
+        "x": 150,
+        "y": 600,
+        "wires": [
+            [
+                "8ae34dab48eb6ea3"
+            ]
+        ]
+    },
+    {
+        "id": "fcf5f6da5f37f16b",
+        "type": "comment",
+        "z": "27aa2877.e08a5",
+        "name": "Select Date Range",
+        "info": "",
+        "x": 190,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "27c09c898b8381db",
+        "type": "ui_date_picker",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "label": "Start Date",
+        "group": "9dc23f7851b1145e",
+        "order": 13,
+        "width": 7,
+        "height": 1,
+        "passthru": true,
+        "topic": "",
+        "topicType": "str",
+        "className": "",
+        "x": 540,
+        "y": 760,
+        "wires": [
+            [
+                "6df4f76797589736"
+            ]
+        ]
+    },
+    {
+        "id": "8923ce705883816d",
+        "type": "ui_date_picker",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "label": "End Date",
+        "group": "9dc23f7851b1145e",
+        "order": 16,
+        "width": 7,
+        "height": 1,
+        "passthru": true,
+        "topic": "",
+        "topicType": "str",
+        "className": "",
+        "x": 540,
+        "y": 800,
+        "wires": [
+            [
+                "20ccc71059a69546"
+            ]
+        ]
+    },
+    {
+        "id": "1ac440f4e7eef5e7",
+        "type": "debug",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 930,
+        "y": 760,
+        "wires": []
+    },
+    {
+        "id": "39dca4e5234fe36b",
+        "type": "debug",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 930,
+        "y": 800,
+        "wires": []
+    },
+    {
+        "id": "6df4f76797589736",
+        "type": "change",
+        "z": "27aa2877.e08a5",
+        "name": "Start Time Range",
+        "rules": [
+            {
+                "t": "set",
+                "p": "start-time",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 730,
+        "y": 760,
+        "wires": [
+            [
+                "1ac440f4e7eef5e7"
+            ]
+        ]
+    },
+    {
+        "id": "20ccc71059a69546",
+        "type": "change",
+        "z": "27aa2877.e08a5",
+        "name": "End Time Range",
+        "rules": [
+            {
+                "t": "set",
+                "p": "end-time",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 720,
+        "y": 800,
+        "wires": [
+            [
+                "39dca4e5234fe36b"
+            ]
+        ]
+    },
+    {
+        "id": "abaf525cea14f5ff",
+        "type": "inject",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "x": 90,
+        "y": 780,
+        "wires": [
+            [
+                "86eed8a06f41bb23",
+                "77a4a80eb2bfaf94"
+            ]
+        ]
+    },
+    {
+        "id": "6c2c05588f0cee7b",
+        "type": "ui_chart",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "group": "9dc23f7851b1145e",
+        "order": 2,
+        "width": 9,
+        "height": 7,
+        "label": "Temperature History",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "60",
+        "removeOlder": "24",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1180,
+        "y": 540,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6fed1f65273d888a",
+        "type": "switch",
+        "z": "27aa2877.e08a5",
+        "name": "Secs >= 0",
+        "property": "payload.Seconds",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "gte",
+                "v": "0",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 410,
+        "y": 1180,
+        "wires": [
+            [
+                "9beaec0742eebd55"
+            ]
+        ]
+    },
+    {
+        "id": "9beaec0742eebd55",
+        "type": "change",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "{\"interval\":msg.payload.Seconds}",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 630,
+        "y": 1180,
+        "wires": [
+            [
+                "28dea2248da9cac0",
+                "1627fbab698a84b1"
+            ]
+        ]
+    },
+    {
+        "id": "28dea2248da9cac0",
+        "type": "debug",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 820,
+        "y": 1150,
+        "wires": []
+    },
+    {
+        "id": "1627fbab698a84b1",
+        "type": "mqtt out",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "topic": "d:/group5.iot/sampling_interval",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "fef97ddb20e5d731",
+        "x": 870,
+        "y": 1200,
+        "wires": []
+    },
+    {
+        "id": "df8ca3bdd8d5fab1",
+        "type": "ui_form",
+        "z": "27aa2877.e08a5",
+        "name": "Sampling Interval Dashboard Form",
+        "label": "",
+        "group": "fb89ba68690b16cd",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "options": [
+            {
+                "label": "Sampling Interval (seconds)",
+                "value": "Seconds",
+                "type": "number",
+                "required": true,
+                "rows": null
+            }
+        ],
+        "formValue": {
+            "Seconds": ""
+        },
+        "payload": "",
+        "submit": "submit",
+        "cancel": "cancel",
+        "topic": "topic",
+        "topicType": "msg",
+        "splitLayout": "",
+        "className": "",
+        "x": 190,
+        "y": 1180,
+        "wires": [
+            [
+                "6fed1f65273d888a"
+            ]
+        ]
+    },
+    {
+        "id": "f03d7a9a9c43b7b6",
+        "type": "ui_chart",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "group": "a78e786cb9c86f2f",
+        "order": 3,
+        "width": 6,
+        "height": 6,
+        "label": "Temperature Chart Sensor 1",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "50",
+        "removeOlder": "20",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 820,
+        "y": 160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "89af7d22b7aa62ef",
+        "type": "ui_chart",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "group": "a78e786cb9c86f2f",
+        "order": 5,
+        "width": 6,
+        "height": 6,
+        "label": "Humidity Chart Sensor 1",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "100",
+        "removeOlder": "20",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 810,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "35d0b8e9cd6b55e5",
+        "type": "mqtt in",
+        "z": "27aa2877.e08a5",
+        "name": "INPUT_TEMP_HUMID",
+        "topic": "d:/group5.iot/status",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "fef97ddb20e5d731",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 160,
+        "y": 160,
+        "wires": [
+            [
+                "a4d88b5ffd261e27"
+            ]
+        ]
+    },
+    {
+        "id": "60227730e03f1417",
+        "type": "ui_gauge",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "group": "a78e786cb9c86f2f",
+        "order": 2,
+        "width": 6,
+        "height": 6,
+        "gtype": "gage",
+        "title": "Temperature Gauge Sensor 1",
+        "label": "°C",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "50",
+        "colors": [
+            "#2020ee",
+            "#00dc00",
+            "#fb1818"
+        ],
+        "seg1": "10",
+        "seg2": "25",
+        "diff": false,
+        "className": "",
+        "x": 820,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "5ea561746e9ee6dc",
+        "type": "ui_gauge",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "group": "a78e786cb9c86f2f",
+        "order": 4,
+        "width": 6,
+        "height": 6,
+        "gtype": "gage",
+        "title": "Humidity Gauge Sensor 1",
+        "label": "%",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 810,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "9f8274d6f06989c2",
+        "type": "debug",
+        "z": "27aa2877.e08a5",
+        "name": "debug 4",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 560,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "b424679968f00a2a",
+        "type": "change",
+        "z": "27aa2877.e08a5",
+        "name": "Temperature",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.temperature",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 570,
+        "y": 160,
+        "wires": [
+            [
+                "60227730e03f1417",
+                "f03d7a9a9c43b7b6"
+            ]
+        ]
+    },
+    {
+        "id": "3ff719a1ba3da669",
+        "type": "change",
+        "z": "27aa2877.e08a5",
+        "name": "Humidity",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.humidity",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 560,
+        "y": 200,
+        "wires": [
+            [
+                "5ea561746e9ee6dc",
+                "89af7d22b7aa62ef"
+            ]
+        ]
+    },
+    {
+        "id": "3d02a28c2faf606d",
+        "type": "comment",
+        "z": "27aa2877.e08a5",
+        "name": "FOR STORING DATA IN MONGODB",
+        "info": "",
+        "x": 320,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "1c46c4396bbcab07",
+        "type": "comment",
+        "z": "27aa2877.e08a5",
+        "name": "FOR UPDATING INTERVALS",
+        "info": "",
+        "x": 180,
+        "y": 1100,
+        "wires": []
+    },
+    {
+        "id": "3123bfe3b40b6225",
+        "type": "comment",
+        "z": "27aa2877.e08a5",
+        "name": "TEMPERATURE AND HUMIDITY DATA",
+        "info": "",
+        "x": 210,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "2a28f14971275a74",
+        "type": "comment",
+        "z": "27aa2877.e08a5",
+        "name": "FETCHING AND DISPLAYING HISTORY OF STORED SENSORS DATA FROM MONGODB",
+        "info": "",
+        "x": 330,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "db28dbfe266dab66",
+        "type": "ui_text",
+        "z": "27aa2877.e08a5",
+        "group": "a78e786cb9c86f2f",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "ENERGY EFFICIENT IOT SENSOR NETWORK FOR WEATHER MONITORING",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": true,
+        "font": "Arial Black,Arial Black,Gadget,sans-serif",
+        "fontSize": "25",
+        "color": "#097479",
+        "x": 350,
+        "y": 20,
+        "wires": []
+    },
+    {
+        "id": "7978d3e8372d7e27",
+        "type": "ui_form",
+        "z": "27aa2877.e08a5",
+        "name": "Communication Interval Dashboard Form",
+        "label": "",
+        "group": "fb89ba68690b16cd",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "options": [
+            {
+                "label": "Communication Interval (seconds)",
+                "value": "Seconds",
+                "type": "number",
+                "required": true,
+                "rows": null
+            }
+        ],
+        "formValue": {
+            "Seconds": ""
+        },
+        "payload": "",
+        "submit": "Submit",
+        "cancel": "Cancel",
+        "topic": "",
+        "topicType": "str",
+        "splitLayout": false,
+        "className": "",
+        "x": 210,
+        "y": 1320,
+        "wires": [
+            [
+                "bb60dda4d40ef982"
+            ]
+        ]
+    },
+    {
+        "id": "bb60dda4d40ef982",
+        "type": "switch",
+        "z": "27aa2877.e08a5",
+        "name": "Secs >= 0",
+        "property": "payload.Seconds",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "gte",
+                "v": "0",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 470,
+        "y": 1320,
+        "wires": [
+            [
+                "6c3fc5eac8c29839"
+            ]
+        ]
+    },
+    {
+        "id": "6c3fc5eac8c29839",
+        "type": "change",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "{\"interval\":msg.payload.Seconds}",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 710,
+        "y": 1320,
+        "wires": [
+            [
+                "bcfb572f32fe51da",
+                "7216bdcdbac0a1e3"
+            ]
+        ]
+    },
+    {
+        "id": "bcfb572f32fe51da",
+        "type": "debug",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "x": 990,
+        "y": 1290,
+        "wires": []
+    },
+    {
+        "id": "7216bdcdbac0a1e3",
+        "type": "mqtt out",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "topic": "d:/group5.iot/communication_interval",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "fef97ddb20e5d731",
+        "x": 1060,
+        "y": 1340,
+        "wires": []
+    },
+    {
+        "id": "5943796462f3eeff",
+        "type": "ui_form",
+        "z": "27aa2877.e08a5",
+        "name": "Minimum Threshold Dashboard Form",
+        "label": "",
+        "group": "fb89ba68690b16cd",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "options": [
+            {
+                "label": "Minimum Threshold",
+                "value": "Threshold",
+                "type": "number",
+                "required": true,
+                "rows": null
+            }
+        ],
+        "formValue": {
+            "Threshold": ""
+        },
+        "payload": "",
+        "submit": "Submit",
+        "cancel": "Cancel",
+        "topic": "",
+        "topicType": "str",
+        "splitLayout": false,
+        "className": "",
+        "x": 210,
+        "y": 1500,
+        "wires": [
+            [
+                "689fcacb8bfc703d"
+            ]
+        ]
+    },
+    {
+        "id": "689fcacb8bfc703d",
+        "type": "switch",
+        "z": "27aa2877.e08a5",
+        "name": "Secs >= 0",
+        "property": "payload.Threshold",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "gte",
+                "v": "0",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 470,
+        "y": 1500,
+        "wires": [
+            [
+                "7d4cdbbfb851fd7f"
+            ]
+        ]
+    },
+    {
+        "id": "7d4cdbbfb851fd7f",
+        "type": "change",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "{\"threshold\":msg.payload.Threshold}",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 670,
+        "y": 1500,
+        "wires": [
+            [
+                "2c798ccce7373177",
+                "62be83f06f6aa432"
+            ]
+        ]
+    },
+    {
+        "id": "2c798ccce7373177",
+        "type": "debug",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "x": 860,
+        "y": 1470,
+        "wires": []
+    },
+    {
+        "id": "62be83f06f6aa432",
+        "type": "mqtt out",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "topic": "d:/group5.iot/minimum_threshold",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "fef97ddb20e5d731",
+        "x": 920,
+        "y": 1520,
+        "wires": []
+    },
+    {
+        "id": "28217b5e2dae417d",
+        "type": "change",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "{\"threshold\":msg.payload.Threshold}",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 640,
+        "y": 1660,
+        "wires": [
+            [
+                "6a29ffc2da7bf029",
+                "e1e951592064ab57"
+            ]
+        ]
+    },
+    {
+        "id": "cac49a8679a9acc5",
+        "type": "ui_form",
+        "z": "27aa2877.e08a5",
+        "name": "Maximum Threshold Dashboard Form",
+        "label": "",
+        "group": "fb89ba68690b16cd",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "options": [
+            {
+                "label": "Maximum Threshold",
+                "value": "Threshold",
+                "type": "number",
+                "required": true,
+                "rows": null
+            }
+        ],
+        "formValue": {
+            "Threshold": ""
+        },
+        "payload": "",
+        "submit": "Submit",
+        "cancel": "Cancel",
+        "topic": "",
+        "topicType": "str",
+        "splitLayout": false,
+        "className": "",
+        "x": 210,
+        "y": 1660,
+        "wires": [
+            [
+                "f5c56c6d6dfb3f4d"
+            ]
+        ]
+    },
+    {
+        "id": "f5c56c6d6dfb3f4d",
+        "type": "switch",
+        "z": "27aa2877.e08a5",
+        "name": "Secs >= 0",
+        "property": "payload.Threshold",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "gte",
+                "v": "0",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 470,
+        "y": 1660,
+        "wires": [
+            [
+                "28217b5e2dae417d"
+            ]
+        ]
+    },
+    {
+        "id": "6a29ffc2da7bf029",
+        "type": "debug",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "x": 830,
+        "y": 1630,
+        "wires": []
+    },
+    {
+        "id": "e1e951592064ab57",
+        "type": "mqtt out",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "topic": "d:/group5.iot/maximum_threshold",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "fef97ddb20e5d731",
+        "x": 890,
+        "y": 1680,
+        "wires": []
+    },
+    {
+        "id": "a4d88b5ffd261e27",
+        "type": "function",
+        "z": "27aa2877.e08a5",
+        "name": "function 1",
+        "func": "\nif (msg.payload.sensor_name.toLowerCase() === \"sensor1\") {\n    return msg;\n}\n\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 160,
+        "wires": [
+            [
+                "3ff719a1ba3da669",
+                "b424679968f00a2a",
+                "9f8274d6f06989c2",
+                "9643150cbfcbf0f7",
+                "7aaf92439fa563a0"
+            ]
+        ]
+    },
+    {
+        "id": "9643150cbfcbf0f7",
+        "type": "function",
+        "z": "27aa2877.e08a5",
+        "name": "function 6",
+        "func": "if (msg.payload.min_threshold_exceeded) {\n    msg.payload = {\n        temperature: msg.payload.temperature,\n        message: \"Minimum threshold exceeded for \" + msg.payload.sensor_name +  \". Current temperature is: \",\n    }\n\n    return msg;\n}\n\nif (msg.payload.max_threshold_exceeded) {\n    msg.payload = {\n        temperature: msg.payload.temperature,\n        message: \"Maximum threshold exceeded for \" + msg.payload.sensor_name + \". Current temperature is: \",\n    }\n\n    return msg;\n}\n\n\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 560,
+        "y": 280,
+        "wires": [
+            [
+                "ba38aa338f0b90c0"
+            ]
+        ]
+    },
+    {
+        "id": "ba38aa338f0b90c0",
+        "type": "template",
+        "z": "27aa2877.e08a5",
+        "name": "Alert Msg",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "{{payload.message}}: {{payload.temperature}} !",
+        "output": "str",
+        "x": 720,
+        "y": 280,
+        "wires": [
+            [
+                "456d5f293a14ad49"
+            ]
+        ]
+    },
+    {
+        "id": "456d5f293a14ad49",
+        "type": "ui_toast",
+        "z": "27aa2877.e08a5",
+        "position": "dialog",
+        "displayTime": "3",
+        "highlight": "",
+        "sendall": true,
+        "outputs": 1,
+        "ok": "OK",
+        "cancel": "",
+        "raw": false,
+        "className": "",
+        "topic": "",
+        "name": "",
+        "x": 870,
+        "y": 280,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "20d69960d96df3c6",
+        "type": "mqtt in",
+        "z": "27aa2877.e08a5",
+        "name": "INPUT_TEMP_HUMID",
+        "topic": "d:/group5.iot/status",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "fef97ddb20e5d731",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 1180,
+        "y": 120,
+        "wires": [
+            [
+                "bf67c20fe4efa19e"
+            ]
+        ]
+    },
+    {
+        "id": "bf67c20fe4efa19e",
+        "type": "function",
+        "z": "27aa2877.e08a5",
+        "name": "function 7",
+        "func": "\nif (msg.payload.sensor_name.toLowerCase() === \"sensor2\") {\n    return msg;\n}\n\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1400,
+        "y": 120,
+        "wires": [
+            [
+                "e55d9106bd45b8bd",
+                "f560629aba72e954",
+                "7c1b66cea42f2207",
+                "32458ab52fe4b37b",
+                "f06cc8572075a8d8"
+            ]
+        ]
+    },
+    {
+        "id": "e55d9106bd45b8bd",
+        "type": "change",
+        "z": "27aa2877.e08a5",
+        "name": "Humidity",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.humidity",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1600,
+        "y": 160,
+        "wires": [
+            [
+                "fdafa2965e050956",
+                "f3a5b575cc415c58"
+            ]
+        ]
+    },
+    {
+        "id": "f560629aba72e954",
+        "type": "change",
+        "z": "27aa2877.e08a5",
+        "name": "Temperature",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.temperature",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1610,
+        "y": 120,
+        "wires": [
+            [
+                "791c78b645263d3c",
+                "3e31eb3708c56d6f"
+            ]
+        ]
+    },
+    {
+        "id": "7c1b66cea42f2207",
+        "type": "debug",
+        "z": "27aa2877.e08a5",
+        "name": "debug 5",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1600,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "32458ab52fe4b37b",
+        "type": "function",
+        "z": "27aa2877.e08a5",
+        "name": "function 8",
+        "func": "if (msg.payload.min_threshold_exceeded) {\n    msg.payload = {\n        temperature: msg.payload.temperature,\n        message: \"Minimum threshold exceeded for \" + msg.payload.sensor_name +  \". Current temperature is: \",\n    }\n\n    return msg;\n}\n\nif (msg.payload.max_threshold_exceeded) {\n    msg.payload = {\n        temperature: msg.payload.temperature,\n        message: \"Maximum threshold exceeded for \" + msg.payload.sensor_name + \". Current temperature is: \",\n    }\n\n    return msg;\n}\n\n\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1580,
+        "y": 260,
+        "wires": [
+            [
+                "b744d5be5010c61d"
+            ]
+        ]
+    },
+    {
+        "id": "fdafa2965e050956",
+        "type": "ui_gauge",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "group": "a78e786cb9c86f2f",
+        "order": 8,
+        "width": 6,
+        "height": 6,
+        "gtype": "gage",
+        "title": "Humidity Gauge Sensor 2",
+        "label": "%",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 1850,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "f3a5b575cc415c58",
+        "type": "ui_chart",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "group": "a78e786cb9c86f2f",
+        "order": 9,
+        "width": 6,
+        "height": 6,
+        "label": "Humidity Chart Sensor 2",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "100",
+        "removeOlder": "20",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1850,
+        "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "791c78b645263d3c",
+        "type": "ui_gauge",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "group": "a78e786cb9c86f2f",
+        "order": 6,
+        "width": 6,
+        "height": 6,
+        "gtype": "gage",
+        "title": "Temperature Gauge Sensor 2",
+        "label": "°C",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "50",
+        "colors": [
+            "#2020ee",
+            "#00dc00",
+            "#fb1818"
+        ],
+        "seg1": "10",
+        "seg2": "25",
+        "diff": false,
+        "className": "",
+        "x": 1860,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "3e31eb3708c56d6f",
+        "type": "ui_chart",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "group": "a78e786cb9c86f2f",
+        "order": 7,
+        "width": 6,
+        "height": 6,
+        "label": "Temperature Chart Sensor 2",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "50",
+        "removeOlder": "20",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1860,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b744d5be5010c61d",
+        "type": "template",
+        "z": "27aa2877.e08a5",
+        "name": "Alert Msg",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "{{payload.message}}: {{payload.temperature}}ºC",
+        "output": "str",
+        "x": 1740,
+        "y": 260,
+        "wires": [
+            [
+                "126472e77ebb387e"
+            ]
+        ]
+    },
+    {
+        "id": "126472e77ebb387e",
+        "type": "ui_toast",
+        "z": "27aa2877.e08a5",
+        "position": "dialog",
+        "displayTime": "3",
+        "highlight": "",
+        "sendall": true,
+        "outputs": 1,
+        "ok": "OK",
+        "cancel": "",
+        "raw": false,
+        "className": "",
+        "topic": "",
+        "name": "",
+        "x": 1890,
+        "y": 260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4f1fdab55da3e3e6",
+        "type": "mqtt in",
+        "z": "27aa2877.e08a5",
+        "name": "INPUT_TEMP_HUMID",
+        "topic": "d:/group5.iot/status",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "fef97ddb20e5d731",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 2256,
+        "y": 131,
+        "wires": [
+            [
+                "5a9cf2519e01d9f0"
+            ]
+        ]
+    },
+    {
+        "id": "5a9cf2519e01d9f0",
+        "type": "function",
+        "z": "27aa2877.e08a5",
+        "name": "function 9",
+        "func": "\nif (msg.payload.sensor_name.toLowerCase() === \"sensor3\") {\n    return msg;\n}\n\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2436,
+        "y": 131,
+        "wires": [
+            [
+                "b9cdc74925573af8",
+                "83cc8ae1cf95b9f2",
+                "013fc212aeee769d",
+                "c9921cca41fa7df9",
+                "767d28bd8566ed6b"
+            ]
+        ]
+    },
+    {
+        "id": "b9cdc74925573af8",
+        "type": "change",
+        "z": "27aa2877.e08a5",
+        "name": "Humidity",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.humidity",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 2640,
+        "y": 180,
+        "wires": [
+            [
+                "a3ce0aa825779cd3",
+                "158e882103e3d9a3"
+            ]
+        ]
+    },
+    {
+        "id": "83cc8ae1cf95b9f2",
+        "type": "change",
+        "z": "27aa2877.e08a5",
+        "name": "Temperature",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.temperature",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 2650,
+        "y": 120,
+        "wires": [
+            [
+                "e25601970d1b980c",
+                "e69e6b1b415b9dcc"
+            ]
+        ]
+    },
+    {
+        "id": "013fc212aeee769d",
+        "type": "debug",
+        "z": "27aa2877.e08a5",
+        "name": "debug 6",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2640,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "c9921cca41fa7df9",
+        "type": "function",
+        "z": "27aa2877.e08a5",
+        "name": "function 10",
+        "func": "if (msg.payload.min_threshold_exceeded) {\n    msg.payload = {\n        temperature: msg.payload.temperature,\n        message: \"Minimum threshold exceeded for \" + msg.payload.sensor_name +  \". Current temperature is: \",\n    }\n\n    return msg;\n}\n\nif (msg.payload.max_threshold_exceeded) {\n    msg.payload = {\n        temperature: msg.payload.temperature,\n        message: \"Maximum threshold exceeded for \" + msg.payload.sensor_name + \". Current temperature is: \",\n    }\n\n    return msg;\n}\n\n\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2630,
+        "y": 260,
+        "wires": [
+            [
+                "33726a4e8835751b"
+            ]
+        ]
+    },
+    {
+        "id": "a3ce0aa825779cd3",
+        "type": "ui_gauge",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "group": "a78e786cb9c86f2f",
+        "order": 12,
+        "width": 6,
+        "height": 6,
+        "gtype": "gage",
+        "title": "Humidity Gauge Sensor 3",
+        "label": "%",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 2890,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "158e882103e3d9a3",
+        "type": "ui_chart",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "group": "a78e786cb9c86f2f",
+        "order": 13,
+        "width": 6,
+        "height": 6,
+        "label": "Humidity Chart Sensor 3",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "100",
+        "removeOlder": "20",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 2890,
+        "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e25601970d1b980c",
+        "type": "ui_gauge",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "group": "a78e786cb9c86f2f",
+        "order": 10,
+        "width": 6,
+        "height": 6,
+        "gtype": "gage",
+        "title": "Temperature Gauge Sensor 3",
+        "label": "°C",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "50",
+        "colors": [
+            "#2020ee",
+            "#00dc00",
+            "#fb1818"
+        ],
+        "seg1": "10",
+        "seg2": "25",
+        "diff": false,
+        "className": "",
+        "x": 2910,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "e69e6b1b415b9dcc",
+        "type": "ui_chart",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "group": "a78e786cb9c86f2f",
+        "order": 11,
+        "width": 6,
+        "height": 6,
+        "label": "Temperature Chart Sensor 3",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "50",
+        "removeOlder": "20",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 2900,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "33726a4e8835751b",
+        "type": "template",
+        "z": "27aa2877.e08a5",
+        "name": "Alert Msg",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "{{payload.message}}: {{payload.temperature}} !",
+        "output": "str",
+        "x": 2780,
+        "y": 260,
+        "wires": [
+            [
+                "04777cb6e6200d2c"
+            ]
+        ]
+    },
+    {
+        "id": "04777cb6e6200d2c",
+        "type": "ui_toast",
+        "z": "27aa2877.e08a5",
+        "position": "dialog",
+        "displayTime": "3",
+        "highlight": "",
+        "sendall": true,
+        "outputs": 1,
+        "ok": "OK",
+        "cancel": "",
+        "raw": false,
+        "className": "",
+        "topic": "",
+        "name": "",
+        "x": 2940,
+        "y": 260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "7aaf92439fa563a0",
+        "type": "mongodb out",
+        "z": "27aa2877.e08a5",
+        "mongodb": "2c4dfbf7810eb834",
+        "name": "Mongo DB sensor",
+        "collection": "sensor1",
+        "payonly": true,
+        "upsert": false,
+        "multi": false,
+        "operation": "store",
+        "x": 590,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "f06cc8572075a8d8",
+        "type": "mongodb out",
+        "z": "27aa2877.e08a5",
+        "mongodb": "2c4dfbf7810eb834",
+        "name": "Mongo DB sensor",
+        "collection": "sensor2",
+        "payonly": true,
+        "upsert": false,
+        "multi": false,
+        "operation": "store",
+        "x": 1610,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "767d28bd8566ed6b",
+        "type": "mongodb out",
+        "z": "27aa2877.e08a5",
+        "mongodb": "2c4dfbf7810eb834",
+        "name": "Mongo DB sensor",
+        "collection": "sensor3",
+        "payonly": true,
+        "upsert": false,
+        "multi": false,
+        "operation": "store",
+        "x": 2630,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "a6becd0627fb3ef6",
+        "type": "mongodb in",
+        "z": "27aa2877.e08a5",
+        "mongodb": "2c4dfbf7810eb834",
+        "name": "Recieve_MongoDB Data",
+        "collection": "",
+        "operation": "find",
+        "x": 610,
+        "y": 600,
+        "wires": [
+            [
+                "9a2406038dedc131",
+                "eb2d94aef16d7cae",
+                "888ddec88472a739"
+            ]
+        ]
+    },
+    {
+        "id": "add74ee8961523c0",
+        "type": "ui_dropdown",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "label": "SensorID",
+        "tooltip": "",
+        "place": "Select option",
+        "group": "9dc23f7851b1145e",
+        "order": 19,
+        "width": 7,
+        "height": 1,
+        "passthru": true,
+        "multiple": false,
+        "options": [
+            {
+                "label": "Sensor1",
+                "value": "sensor1",
+                "type": "str"
+            },
+            {
+                "label": "Sensor2",
+                "value": "sensor2",
+                "type": "str"
+            },
+            {
+                "label": "Sensor3",
+                "value": "sensor3",
+                "type": "str"
+            }
+        ],
+        "payload": "",
+        "topic": "topic",
+        "topicType": "msg",
+        "className": "",
+        "x": 400,
+        "y": 900,
+        "wires": [
+            [
+                "b44804779632d9de"
+            ]
+        ]
+    },
+    {
+        "id": "b44804779632d9de",
+        "type": "change",
+        "z": "27aa2877.e08a5",
+        "name": "Sensor ID",
+        "rules": [
+            {
+                "t": "set",
+                "p": "sensor-id",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 600,
+        "y": 900,
+        "wires": [
+            [
+                "2eb7924f0010d566"
+            ]
+        ]
+    },
+    {
+        "id": "8ae34dab48eb6ea3",
+        "type": "function",
+        "z": "27aa2877.e08a5",
+        "name": "function 11",
+        "func": "var sensorID = flow.get(\"sensor-id\");\n\nif (sensorID) {\n    msg.collection = sensorID;\n    return msg;\n}\n\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 390,
+        "y": 600,
+        "wires": [
+            [
+                "a6becd0627fb3ef6"
+            ]
+        ]
+    },
+    {
+        "id": "eb2d94aef16d7cae",
+        "type": "debug",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 870,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "693c01e1584c99f5",
+        "type": "inject",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "x": 90,
+        "y": 900,
+        "wires": [
+            [
+                "bef3652db97fcf2a"
+            ]
+        ]
+    },
+    {
+        "id": "bef3652db97fcf2a",
+        "type": "change",
+        "z": "27aa2877.e08a5",
+        "name": "Sensor",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "sensor1",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 240,
+        "y": 900,
+        "wires": [
+            [
+                "add74ee8961523c0"
+            ]
+        ]
+    },
+    {
+        "id": "86eed8a06f41bb23",
+        "type": "function",
+        "z": "27aa2877.e08a5",
+        "name": "function 12",
+        "func": "let now = new Date().getTime();\n\nlet oneDayInMs = 24 * 60 * 60 * 1000;\nmsg.payload = new Date(now - oneDayInMs).getTime();\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 310,
+        "y": 760,
+        "wires": [
+            [
+                "27c09c898b8381db"
+            ]
+        ]
+    },
+    {
+        "id": "77a4a80eb2bfaf94",
+        "type": "function",
+        "z": "27aa2877.e08a5",
+        "name": "function 13",
+        "func": "let now = new Date().getTime();\n\nlet oneDayInMs = 24 * 60 * 60 * 1000;\nmsg.payload = new Date(now + oneDayInMs).getTime();\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 310,
+        "y": 800,
+        "wires": [
+            [
+                "8923ce705883816d"
+            ]
+        ]
+    },
+    {
+        "id": "4f846c5b1d941017",
+        "type": "ui_chart",
+        "z": "27aa2877.e08a5",
+        "name": "",
+        "group": "9dc23f7851b1145e",
+        "order": 4,
+        "width": 10,
+        "height": 7,
+        "label": "Humidity History",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "100",
+        "removeOlder": "24",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1170,
+        "y": 600,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "888ddec88472a739",
+        "type": "function",
+        "z": "27aa2877.e08a5",
+        "name": "Create a Chart Array for Chart.js",
+        "func": "// This function reformats the timeseries data into an array that \n// Chart.js (See http://www.chartjs.org/ ) will plot\n// The node-red-dashboard Chart node uses Chart.js \n\nvar starttime = flow.get(\"start-time\");\nvar endtime = flow.get(\"end-time\");\n\nstarttime = Math.floor( starttime / 1000);\nendtime = Math.floor(endtime / 1000);\n\n\nif( msg.payload.length === 0 ) {\n    // The historical database does not contain values for this date range \n    // Reset the chart with a blank array\n    msg.payload = [] ;\n    return msg;\n}\n\n\n\n// The Array has this structure, inserting the first element as a template.\nvar ChartData = [ {\"series\":[\"Data\"],\n                   \"data\":[[{\"x\":msg.payload[0].timestamp,\"y\":   msg.payload[0].humidity}]],\n                   \"labels\":[\"Data\"]}];\n\n// Start at 1 because we've already added element 0 in the initial array definition\nfor( var i=1; i < msg.payload.length; i++ ) {\n    if( (msg.payload[i].timestamp >= starttime) && (msg.payload[i].timestamp <= endtime) ) {\n        // This temperature reading is within the Date Range\n        ChartData[0].data[0].push( { \"x\":msg.payload[i].timestamp,\"y\": msg.payload[i].humidity } );\n    }    \n}\n// Now we need to sort on the time so that we give the Chart node an array in time order\nChartData[0].data[0].sort(function sortNumber(a,b) { return a.x - b.x; });\n\n\nmsg.payload = ChartData;\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 930,
+        "y": 600,
+        "wires": [
+            [
+                "4f846c5b1d941017"
+            ]
+        ]
+    },
+    {
+        "id": "5c4195c12a175930",
+        "type": "ui_text",
+        "z": "27aa2877.e08a5",
+        "group": "fb89ba68690b16cd",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "ENERGY EFFICIENT IOT SENSOR NETWORK FOR WEATHER MONITORING",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": true,
+        "font": "Arial Black,Arial Black,Gadget,sans-serif",
+        "fontSize": "25",
+        "color": "#097479",
+        "x": 340,
+        "y": 1040,
+        "wires": []
+    },
+    {
+        "id": "c31177114e36585c",
+        "type": "ui_text",
+        "z": "27aa2877.e08a5",
+        "group": "9dc23f7851b1145e",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "ENERGY EFFICIENT IOT SENSOR NETWORK FOR WEATHER MONITORING",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": true,
+        "font": "Arial Black,Arial Black,Gadget,sans-serif",
+        "fontSize": "25",
+        "color": "#097479",
+        "x": 300,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "2f14054dc92a9231",
+        "type": "ui_spacer",
+        "z": "27aa2877.e08a5",
+        "name": "spacer",
+        "group": "93982afc5b55eeba",
+        "order": 8,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "b8b140ac239e7edc",
+        "type": "ui_spacer",
+        "z": "27aa2877.e08a5",
+        "name": "spacer",
+        "group": "93982afc5b55eeba",
+        "order": 10,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "6eb0f242c017e540",
+        "type": "ui_spacer",
+        "z": "27aa2877.e08a5",
+        "name": "spacer",
+        "group": "9dc23f7851b1145e",
+        "order": 3,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "eaf6188e7fc7a8d1",
+        "type": "ui_spacer",
+        "z": "27aa2877.e08a5",
+        "name": "spacer",
+        "group": "9dc23f7851b1145e",
+        "order": 5,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "93c302886b5d5971",
+        "type": "ui_spacer",
+        "z": "27aa2877.e08a5",
+        "name": "spacer",
+        "group": "9dc23f7851b1145e",
+        "order": 6,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "83a5249f2a3086bf",
+        "type": "ui_spacer",
+        "z": "27aa2877.e08a5",
+        "name": "spacer",
+        "group": "9dc23f7851b1145e",
+        "order": 7,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "aeed9ba98b2e30a7",
+        "type": "ui_spacer",
+        "z": "27aa2877.e08a5",
+        "name": "spacer",
+        "group": "9dc23f7851b1145e",
+        "order": 8,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "09e473e67143124d",
+        "type": "ui_spacer",
+        "z": "27aa2877.e08a5",
+        "name": "spacer",
+        "group": "9dc23f7851b1145e",
+        "order": 9,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "90b3eafd1869059f",
+        "type": "ui_spacer",
+        "z": "27aa2877.e08a5",
+        "name": "spacer",
+        "group": "9dc23f7851b1145e",
+        "order": 10,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "fd27d6c9e4c388ab",
+        "type": "ui_spacer",
+        "z": "27aa2877.e08a5",
+        "name": "spacer",
+        "group": "9dc23f7851b1145e",
+        "order": 11,
+        "width": 20,
+        "height": 1
+    },
+    {
+        "id": "36d94f74e8041db1",
+        "type": "ui_spacer",
+        "z": "27aa2877.e08a5",
+        "name": "spacer",
+        "group": "9dc23f7851b1145e",
+        "order": 12,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "a2d7bdc44c1bde3e",
+        "type": "ui_spacer",
+        "z": "27aa2877.e08a5",
+        "name": "spacer",
+        "group": "9dc23f7851b1145e",
+        "order": 14,
+        "width": 7,
+        "height": 1
+    },
+    {
+        "id": "57bc1718a2322cee",
+        "type": "ui_spacer",
+        "z": "27aa2877.e08a5",
+        "name": "spacer",
+        "group": "9dc23f7851b1145e",
+        "order": 15,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "b46a5ca2ab41c09a",
+        "type": "ui_spacer",
+        "z": "27aa2877.e08a5",
+        "name": "spacer",
+        "group": "9dc23f7851b1145e",
+        "order": 17,
+        "width": 7,
+        "height": 1
+    },
+    {
+        "id": "d197c9070cbe98f1",
+        "type": "ui_spacer",
+        "z": "27aa2877.e08a5",
+        "name": "spacer",
+        "group": "9dc23f7851b1145e",
+        "order": 18,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "5974b44d91f8f5cd",
+        "type": "ui_spacer",
+        "z": "27aa2877.e08a5",
+        "name": "spacer",
+        "group": "9dc23f7851b1145e",
+        "order": 20,
+        "width": 7,
+        "height": 1
+    },
+    {
+        "id": "68374a7aa6d4c076",
+        "type": "ui_spacer",
+        "z": "27aa2877.e08a5",
+        "name": "spacer",
+        "group": "9dc23f7851b1145e",
+        "order": 21,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "fb79c3411240d5cd",
+        "type": "ui_spacer",
+        "z": "27aa2877.e08a5",
+        "name": "spacer",
+        "group": "9dc23f7851b1145e",
+        "order": 23,
+        "width": 7,
+        "height": 1
+    },
+    {
+        "id": "9dc23f7851b1145e",
+        "type": "ui_group",
+        "name": "IoT Group",
+        "tab": "22642fff69acca9a",
+        "order": 1,
+        "disp": false,
+        "width": "20",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "fef97ddb20e5d731",
+        "type": "mqtt-broker",
+        "name": "Eclipse",
+        "broker": "mqtt.eclipseprojects.io",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "fb89ba68690b16cd",
+        "type": "ui_group",
+        "name": "INTERVALS",
+        "tab": "fc45357524a2d868",
+        "order": 1,
+        "disp": false,
+        "width": 12,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "a78e786cb9c86f2f",
+        "type": "ui_group",
+        "name": "Temperature and Humidity",
+        "tab": "833db8c8c06a2e23",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "2c4dfbf7810eb834",
+        "type": "mongodb",
+        "hostname": "127.0.0.1",
+        "topology": "direct",
+        "connectOptions": "",
+        "port": "27017",
+        "db": "IoTPracticals",
+        "name": "Mongo DB"
+    },
+    {
+        "id": "93982afc5b55eeba",
+        "type": "ui_group",
+        "name": "ESP32_ASSIGNMENT_FINAL",
+        "tab": "a9c15e15ae69b64b",
+        "order": 1,
+        "disp": false,
+        "width": "14",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "22642fff69acca9a",
+        "type": "ui_tab",
+        "name": "IoT Group Historical Data",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "fc45357524a2d868",
+        "type": "ui_tab",
+        "name": "IoT Group Intervals",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "833db8c8c06a2e23",
+        "type": "ui_tab",
+        "name": "IoT Group DHT11 Data",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "a9c15e15ae69b64b",
+        "type": "ui_tab",
+        "name": "SET_LED",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    }
+]
